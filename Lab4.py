@@ -16,7 +16,7 @@ The two main problems dealt with within this lab are:
     2) A study of a vertical column underground in Kangerlussuaq, Greenland.
     How the temperature of this ground changes over the course of years, taking
     into account climate variability and geothermal heating.
-    
+
 What are the implications of this system and what can the execution of this
 solver provide with regards to real-world insight?
 
@@ -41,6 +41,7 @@ solution = np.array([[0., 0., 0., 0., 0., 0.,
        [0.       , 0.       , 0.       , 0.       , 0.       , 0.       ,
         0., 0.       , 0.       , 0.       , 0.       ]])
 
+
 def sample_init(x):
     '''Simple boundary condition function. Used for setting the initial
     temperature profile across the vertical column of space in Q1.
@@ -59,24 +60,24 @@ def temp_kanger(t):
 
     Returns
     -------
-    Function 
-        Used to describe the upper boundary condition behavior 
+    Function
+        Used to describe the upper boundary condition behavior
         of the Kangerlussuaq underground column over the course of the year.
 
     '''
-    
+
     t_kanger = np.array([-19.7, -21.0, -17., -8.4, 2.3, 8.4, 10.7, 8.5,
-                          3.1, -6.0, -12.0, -16.9])
-     
+                         3.1, -6.0, -12.0, -16.9])
+
     t_amp = (t_kanger - t_kanger.mean()).max()
-   
+
     return t_amp*np.sin(np.pi/180 * t - np.pi/2) + t_kanger.mean() + 3
 
 
-def heat_solve(xmax=100.0, dx=1, tmax=86400*365*80, dt=86400, c2=2.5e-7, init=0, 
-               kanger=temp_kanger, debug=False):
+def heat_solve(xmax=100.0, dx=1, tmax=86400*365*80, dt=86400, c2=2.5e-7,
+               init=0, kanger=temp_kanger, debug=False):
     '''
-    
+
 
     Parameters
     ----------
@@ -99,7 +100,7 @@ def heat_solve(xmax=100.0, dx=1, tmax=86400*365*80, dt=86400, c2=2.5e-7, init=0,
         boundary condition
     debug : boolean, defaults to False
         If True, print out debug information.
-        
+
     Returns
     -------
     x: numpy vector
@@ -119,65 +120,63 @@ def heat_solve(xmax=100.0, dx=1, tmax=86400*365*80, dt=86400, c2=2.5e-7, init=0,
     # Stability Criterion -- Assuming the if statement below is true,
     # a warning will be displayed indicating the resulting plot may and
     # likely will have inaccuracies
-    
-    
+
     if (dt > dx**2/(2*c2)):
         warnings.warn('Stability criterion is not met.')
-    
+
     # Set constant value of r
     r = c2 * dt/dx**2
-    
-    
+
     # Create space and time grids.
     x = np.arange(0, xmax+dx, dx)
     t = np.arange(0, tmax+dt, dt)
-    
+
     # Save number of points
     M, N = x.size, t.size
-    
+
     # Create temperature solution array
     temp = np.zeros([M, N])
-    
-    # Set Boundary Conditions (Neumann) -- Use for HW06  
+
+    # Set Boundary Conditions (Neumann) -- Use for HW06
         #  temp[0,0] = temp[1,0]
         #  temp[-1,0] = temp[-2,0]
-        
+
     # Set boundary conditions (Dirichlet - Question 1)
     # temp[0,:] = 0
-    # temp[-1,:] = 0     
-    
+    # temp[-1,:] = 0
+
     # Debug time:
     if debug:
         print(f"Size of grid is {M} in space, {N} in time")
         print(f"Diffusion coeff = {c2}")
         print(f"Space grid goes from {x[0]} to {x[-1]}")
         print(f"Time grid goes from {t[0]} to {t[-1]}")
-    
+
     # Set initial condition
     if callable(init):
         temp[:, 0] = init(x)
     else:
         temp[:, 0] = init
-        
+
     # Set boundary conditions (Dirichlet - Question 2&3)
-    if callable(kanger):    
-            # Since kanger_temp accepts t in units of days, here t is converted
-            # from seconds to days
-        temp[0,:] = kanger(t/(24*3600.))
-        
+    if callable(kanger):
+        # Since kanger_temp accepts t in units of days, here t is converted
+        # from seconds to days
+        temp[0, :] = kanger(t/(24*3600.))
+
     else:
-        temp[0,:] = 0
-        
-    temp[-1,:] = 5        
-    
+        temp[0, :] = 0
+
+    temp[-1, :] = 5
+
     # Solve via our forward-difference solver
     for j in range(0, N-1):
         temp[1:-1, j+1] = (1-2*r)*temp[1:-1, j] + \
-            r*(temp[2:,j] + temp[:-2,j])
-        # Set Boundary Conditions (Neumann) -- Use for HW06  
-            # temp[0,:] = temp[1,:]
-            # temp[-1,:] = temp[-2,:]
-    
+            r*(temp[2:, j] + temp[:-2, j])
+        # Set Boundary Conditions (Neumann) -- Use for HW06
+            #  temp[0,:] = temp[1,:]
+            #  temp[-1,:] = temp[-2,:]
+
     return x, t, temp, dtPass
 
 
@@ -189,7 +188,7 @@ def plot_func():
         - Plot Two: Temperature profile of the vertical column. The coldest
                     each point reaches is represented by "Winter" and the
                     warmest each point reaches is represented by "Summer"
-                    
+
     Inputs
     -------
     heat_solve: function
@@ -200,24 +199,25 @@ def plot_func():
     None, fr (for real)
 
     '''
-    
+
     # Get solution from solver
     x, t, temp, dt = heat_solve()
-    
+
     ###########################################################
     # Plot One #
-    
+
     # Create a figure/axes object for the result of the forward-diff solver
     fig, axes = plt.subplots(1, 1)
     axes.invert_yaxis()
-    
+
     # Create a color map and add a color bar
-            # One thing to note is (x), representative of space, is plotted
-            # on the vertical axis
-    map = axes.pcolor(((t/86400)/365), x, temp, cmap='seismic', vmin=-5, vmax=5)
+    # One thing to note is (x), representative of space, is plotted
+    # on the vertical axis
+    map = axes.pcolor(((t/86400)/365), x, temp, cmap='seismic',
+                      vmin=-5, vmax=5)
     plt.colorbar(map, ax=axes, label='Temperature (º$C$)')
-    
-    # Add plot labels, save plot as file, and display 
+
+    # Add plot labels, save plot as file, and display
     axes.set_title("Heat Diffusion through Permafrost in Kangerlussuaq, GL")
     axes.set_xlabel("Time (Years)")
     axes.set_ylabel("Depth (m)")
@@ -225,21 +225,21 @@ def plot_func():
     file_name = f'lab4_figure_{file_counter:03}.png'
     plt.savefig(file_name)
     plt.show()
-    
+
     ###########################################################
     # Plot Two #
-    
+
     # Set indexing for final year of results
     loc = int(-365/(dt/86400))
-    
+
     # Extract min and max values over final year
-    winter = temp[:,loc:].min(axis=1)
-    summer = temp[:,loc:].max(axis=1)
-    
+    winter = temp[:, loc:].min(axis=1)
+    summer = temp[:, loc:].max(axis=1)
+
     # Create a temperature profile plot
-    fix, ax2 = plt.subplots(1, 1, figsize=(10,8))
-    ax2.plot(winter,x,label='Winter')
-    ax2.plot(summer,x,label='Summer', linestyle='--')
+    fix, ax2 = plt.subplots(1, 1, figsize=(10, 8))
+    ax2.plot(winter, x, label='Winter')
+    ax2.plot(summer, x, label='Summer', linestyle='--')
     ax2.invert_yaxis()
     ax2.legend(loc='best')
     ax2.set_title("Vertical Profile of the Final Year's Max and Min Temperatures")
@@ -249,6 +249,7 @@ def plot_func():
     file_name = f'lab4_figure_{file_counter:03}.png'
     plt.savefig(file_name)
     plt.show()
+
 
 plot_func()
 
