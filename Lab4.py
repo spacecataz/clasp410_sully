@@ -75,7 +75,7 @@ def temp_kanger(t):
 
 
 def heat_solve(xmax=100.0, dx=1, tmax=86400*365*80, dt=86400, c2=2.5e-7,
-               init=0, kanger=temp_kanger, debug=False):
+               init=0, kanger=temp_kanger, debug=False, neumann=False):
     '''
 
 
@@ -98,6 +98,9 @@ def heat_solve(xmax=100.0, dx=1, tmax=86400*365*80, dt=86400, c2=2.5e-7,
     kanger: callable function
         Used to import the temp_kanger function and apply it to the upper
         boundary condition
+    neumann : boolean, defaults to False
+        If set to True, Neumann boundary conditions are used (zero gradient
+        at spatial boundaries).
     debug : boolean, defaults to False
         If True, print out debug information.
 
@@ -138,8 +141,9 @@ def heat_solve(xmax=100.0, dx=1, tmax=86400*365*80, dt=86400, c2=2.5e-7,
     temp = np.zeros([M, N])
 
     # Set Boundary Conditions (Neumann) -- Use for HW06
-        #  temp[0,0] = temp[1,0]
-        #  temp[-1,0] = temp[-2,0]
+    if neumann:
+        temp[0, 0] = temp[1, 0]
+        temp[-1, 0] = temp[-2, 0]
 
     # Set boundary conditions (Dirichlet - Question 1)
     # temp[0,:] = 0
@@ -174,8 +178,9 @@ def heat_solve(xmax=100.0, dx=1, tmax=86400*365*80, dt=86400, c2=2.5e-7,
         temp[1:-1, j+1] = (1-2*r)*temp[1:-1, j] + \
             r*(temp[2:, j] + temp[:-2, j])
         # Set Boundary Conditions (Neumann) -- Use for HW06
-            #  temp[0,:] = temp[1,:]
-            #  temp[-1,:] = temp[-2,:]
+        if neumann:
+            temp[0, :] = temp[1, :]
+            temp[-1, :] = temp[-2, :]
 
     return x, t, temp, dtPass
 
